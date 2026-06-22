@@ -71,11 +71,31 @@ cd arch/order-service && go run main.go
 cd arch/gateway && go run main.go
 ```
 
+## 📚 教程目录
+
+本项目包含一套完整的从零开始学习 Go Web 开发的教程，位于 `docs/` 目录：
+
+| 章节 | 标题 | 文件 |
+|------|------|------|
+| 01 | 剥离抽象 —— 从 Socket 到 HTTP | [01_from_socket_to_http.md](docs/01_from_socket_to_http.md) |
+| 02 | net/http 的诞生 | [02_the_birth_of_net_http.md](docs/02_the_birth_of_net_http.md) |
+| 03 | 诊断原生缺陷 | [03_diagnosing_native_defects.md](docs/03_diagnosing_native_defects.md) |
+| 04 | Gin 核心组件 | [04_gin_core_components.md](docs/04_gin_core_components.md) |
+| 05 | Mini-Gin 实现 | [05_mini_gin_implementation.md](docs/05_mini_gin_implementation.md) |
+| 06 | 性能优化：Pool vs GC | [06_performance_pool_vs_gc.md](docs/06_performance_pool_vs_gc.md) |
+| 07 | Router Group 设计 | [07_router_group_design.md](docs/07_router_group_design.md) |
+| 08 | 控制流设计 | [08_control_flow_design.md](docs/08_control_flow_design.md) |
+| 09 | 分布式视角 | [09_distributed_perspective.md](docs/09_distributed_perspective.md) |
+| 10 | API Gateway 实现 | [10_api_gateway_implementation.md](docs/10_api_gateway_implementation.md) |
+| 11 | Service Mesh 解密 | [11_service_mesh_demystified.md](docs/11_service_mesh_demystified.md) |
+| 12 | Gin 源码分析 | [12_gin_source_code_analysis.md](docs/12_gin_source_code_analysis.md) |
+| 13 | 避坑指南（分布式下的 Gin） | [13_pitfall_guide.md](docs/13_pitfall_guide.md) |
+
 ## 📂 项目结构
 
 ```
 .
-├── docs/            # 教程文档 (Wiki 导出)
+├── docs/            # 教程文档（13 章完整教程）
 ├── mini-gin/        # 核心：从零实现的 Web 框架
 ├── arch/            # 架构：Gateway & Service 示例
 └── README.md
