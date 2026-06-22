@@ -1,6 +1,9 @@
-FROM golang:1.21-alpine AS builder
+FROM golang:1.23-alpine AS builder
 
 WORKDIR /app
+
+# 使用国内 Go 代理加速模块下载
+ENV GOPROXY=https://goproxy.cn,direct
 
 # 复制 go mod 和 sum 文件
 COPY go.mod go.sum ./
@@ -17,7 +20,9 @@ RUN CGO_ENABLED=0 GOOS=linux go build -o user-service .
 # 最终镜像
 FROM alpine:latest
 
-RUN apk --no-cache add ca-certificates
+# 使用国内 Alpine 镜像源
+RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories \
+    && apk --no-cache add ca-certificates
 
 WORKDIR /root/
 

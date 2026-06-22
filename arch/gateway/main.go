@@ -6,6 +6,7 @@ import (
     "net/http"
     "net/http/httputil"
     "net/url"
+    "os"
     "time"
 
     "github.com/gin-gonic/gin"
@@ -31,36 +32,42 @@ func main() {
     // 5. 熔断中间件
     r.Use(CircuitBreakerMiddleware())
 
+    // ==================== 路由定义 ====================
+    
+    // 健康检查（不需要鉴权）
+    r.GET("/health", func(c *gin.Context) {
+        c.JSON(http.StatusOK, gin.H{"status": "ok"})
+    })
+
+    // Prometheus 指标端点（不需要鉴权）
+    r.GET("/metrics", MetricsEndpoint())
+
     // ==================== 业务中间件 ====================
     
-    // JWT 鉴权
+    // JWT 鉴权（在指标端点之后注册，避免拦截 /health 和 /metrics）
     r.Use(JWTAuth())
 
     // 超时控制
     r.Use(Timeout(5 * time.Second))
 
-    // ==================== 路由定义 ====================
-    
-    // Prometheus 指标端点
-    r.GET("/metrics", MetricsEndpoint())
-
-    // 用户服务代理
-    userSvc := "http://localhost:8081"
+    // 用户服务代理（可通过环境变量配置地址）
+    userSvc := os.Getenv("USER_SERVICE_ADDR")
+    if userSvc == "" {
+        userSvc = "http://localhost:8081"
+    }
     proxyUser := createProxy(userSvc)
     r.Any("/users/*path", func(c *gin.Context) {
         proxyUser.ServeHTTP(c.Writer, c.Request)
     })
 
-    // 订单服务代理
-    orderSvc := "http://localhost:8082"
+    // 订单服务代理（可通过环境变量配置地址）
+    orderSvc := os.Getenv("ORDER_SERVICE_ADDR")
+    if orderSvc == "" {
+        orderSvc = "http://localhost:8082"
+    }
     proxyOrder := createProxy(orderSvc)
     r.Any("/orders/*path", func(c *gin.Context) {
         proxyOrder.ServeHTTP(c.Writer, c.Request)
-    })
-
-    // 健康检查（不需要鉴权）
-    r.GET("/health", func(c *gin.Context) {
-        c.JSON(http.StatusOK, gin.H{"status": "ok"})
     })
 
     log.Println("API Gateway starting on :8080")

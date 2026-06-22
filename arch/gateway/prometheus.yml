@@ -15,5 +15,5 @@ scrape_configs:
   # 从 Prometheus 自身的 /metrics 端点抓取指标
   - job_name: 'prometheus'
     static_configs:
-      - targets: ['localhost:9090']
+      - targets: ['prometheus:9090']
     scrape_interval: 5s
