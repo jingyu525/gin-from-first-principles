@@ -47,10 +47,28 @@ go run main.go
 curl http://localhost:8080/users/123
 ```
 
-### 运行 API Gateway (Arch)
+### 运行完整微服务架构 (Arch)
+
+#### 方式一：使用 Docker Compose（推荐）
 ```bash
-cd arch/gateway
-go run main.go
+# 一键启动所有服务
+docker-compose up --build
+
+# 测试
+curl http://localhost:8080/users/123
+curl -H "Authorization: Bearer your-token" http://localhost:8080/orders/456
+```
+
+#### 方式二：本地运行
+```bash
+# 终端 1：启动用户服务
+cd arch/user-service && go run main.go
+
+# 终端 2：启动订单服务
+cd arch/order-service && go run main.go
+
+# 终端 3：启动 API Gateway
+cd arch/gateway && go run main.go
 ```
 
 ## 📂 项目结构

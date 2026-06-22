@@ -5,6 +5,9 @@
 *.so
 *.dylib
 mini-gin/mini-gin
+arch/gateway/gateway
+arch/user-service/user-service
+arch/order-service/order-service
 
 # Test binaries
 *.test
