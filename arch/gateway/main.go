@@ -12,13 +12,37 @@ import (
 )
 
 func main() {
-    r := gin.Default()
+    r := gin.New()
 
-    // 全局中间件：JWT 鉴权
+    // ==================== 可观测性中间件 ====================
+    
+    // 1. 日志中间件
+    r.Use(LoggerMiddleware())
+    
+    // 2. 链路追踪中间件
+    r.Use(TracingMiddleware())
+    
+    // 3. Prometheus 指标中间件
+    r.Use(PrometheusMiddleware())
+    
+    // 4. 限流中间件（每秒 10 个请求，桶容量 20）
+    r.Use(RateLimitMiddleware(10, 20))
+    
+    // 5. 熔断中间件
+    r.Use(CircuitBreakerMiddleware())
+
+    // ==================== 业务中间件 ====================
+    
+    // JWT 鉴权
     r.Use(JWTAuth())
 
-    // 全局中间件：超时控制
+    // 超时控制
     r.Use(Timeout(5 * time.Second))
+
+    // ==================== 路由定义 ====================
+    
+    // Prometheus 指标端点
+    r.GET("/metrics", MetricsEndpoint())
 
     // 用户服务代理
     userSvc := "http://localhost:8081"
@@ -40,6 +64,11 @@ func main() {
     })
 
     log.Println("API Gateway starting on :8080")
+    log.Println("Endpoints:")
+    log.Println("  GET  /health - Health check")
+    log.Println("  GET  /metrics - Prometheus metrics")
+    log.Println("  ANY  /users/*path - User service proxy")
+    log.Println("  ANY  /orders/*path - Order service proxy")
     r.Run(":8080")
 }
 
@@ -53,7 +82,7 @@ func createProxy(target string) *httputil.ReverseProxy {
 func JWTAuth() gin.HandlerFunc {
     return func(c *gin.Context) {
         // 健康检查接口不需要鉴权
-        if c.Request.URL.Path == "/health" {
+        if c.Request.URL.Path == "/health" || c.Request.URL.Path == "/metrics" {
             c.Next()
             return
         }
@@ -65,7 +94,6 @@ func JWTAuth() gin.HandlerFunc {
         }
 
         // 简化示例：实际应该验证 JWT token
-        // 这里只是检查是否以 "Bearer " 开头
         if len(token) < 7 || token[:7] != "Bearer " {
             c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
             return
@@ -78,7 +106,6 @@ func JWTAuth() gin.HandlerFunc {
 // Timeout 超时控制中间件
 func Timeout(duration time.Duration) gin.HandlerFunc {
     return func(c *gin.Context) {
-        // 设置 context 超时
         ctx, cancel := context.WithTimeout(c.Request.Context(), duration)
         defer cancel()
         c.Request = c.Request.WithContext(ctx)

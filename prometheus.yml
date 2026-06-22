@@ -1,0 +1,19 @@
+# Prometheus 配置文件
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+# 抓取配置
+scrape_configs:
+  # 从 Gateway 的 /metrics 端点抓取指标
+  - job_name: 'gateway'
+    static_configs:
+      - targets: ['gateway:8080']
+    metrics_path: '/metrics'
+    scrape_interval: 5s
+
+  # 从 Prometheus 自身的 /metrics 端点抓取指标
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+    scrape_interval: 5s

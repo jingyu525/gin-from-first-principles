@@ -1,6 +1,8 @@
 version: '3.8'
 
 services:
+  # ==================== 业务服务 ====================
+  
   # User Service - 用户服务
   user-service:
     build:
@@ -21,7 +23,7 @@ services:
     networks:
       - microservices
 
-  # API Gateway - 网关
+  # API Gateway - 网关（包含完整可观测性中间件）
   gateway:
     build:
       context: ./arch/gateway
@@ -31,9 +33,49 @@ services:
     depends_on:
       - user-service
       - order-service
+      - jaeger
+      - prometheus
+    networks:
+      - microservices
+
+  # ==================== 可观测性栈 ====================
+  
+  # Jaeger - 链路追踪
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    ports:
+      - "16686:16686"  # UI
+      - "14268:14268"  # HTTP collector
+    environment:
+      - COLLECTOR_ZIPKIN_HTTP_PORT=9411
+    networks:
+      - microservices
+
+  # Prometheus - 指标收集
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    networks:
+      - microservices
+
+  # Grafana - 指标可视化
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana-data:/var/lib/grafana
     networks:
       - microservices
 
 networks:
   microservices:
     driver: bridge
+
+volumes:
+  grafana-data:
