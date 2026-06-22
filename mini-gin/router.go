@@ -97,17 +97,71 @@ func parsePath(path string) []string {
     return result
 }
 
+// RouterGroup 路由组
+type RouterGroup struct {
+    prefix     string
+    middleware []Handler
+    parent     *RouterGroup
+    engine     *Engine  // 指向主引擎
+}
+
+// Group 创建子路由组
+func (g *RouterGroup) Group(prefix string) *RouterGroup {
+    return &RouterGroup{
+        prefix:     g.prefix + prefix,
+        middleware:  append([]Handler{}, g.middleware...),
+        parent:      g,
+        engine:      g.engine,
+    }
+}
+
+// Use 为路由组添加中间件
+func (g *RouterGroup) Use(middleware ...Handler) {
+    g.middleware = append(g.middleware, middleware...)
+}
+
+// GET 注册 GET 请求
+func (g *RouterGroup) GET(path string, handler Handler) {
+    fullPath := g.prefix + path
+    allHandlers := append(g.middleware, handler)
+    g.engine.router.addRoute("GET", fullPath, func(c *Context) {
+        c.handlers = allHandlers
+        c.Next()
+    })
+}
+
+// POST 注册 POST 请求
+func (g *RouterGroup) POST(path string, handler Handler) {
+    fullPath := g.prefix + path
+    allHandlers := append(g.middleware, handler)
+    g.engine.router.addRoute("POST", fullPath, func(c *Context) {
+        c.handlers = allHandlers
+        c.Next()
+    })
+}
+
 // Engine 更新为使用基数树路由
 type Engine struct {
     router   *Router
     handlers []Handler  // 全局中间件
     pool     sync.Pool  // 对象池，用于复用 Context
+    groups   []*RouterGroup  // 所有路由组
+}
+
+// Default 返回默认路由组
+func (e *Engine) Default() *RouterGroup {
+    return &RouterGroup{
+        prefix:     "",
+        middleware:  e.handlers,
+        engine:      e,
+    }
 }
 
 // New 创建新的引擎
 func New() *Engine {
     engine := &Engine{
         router: NewRouter(),
+        groups: make([]*RouterGroup, 0),
     }
     
     // 初始化对象池

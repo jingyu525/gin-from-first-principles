@@ -62,6 +62,13 @@ func (c *Context) Query(key string) string {
     return c.Request.URL.Query().Get(key)
 }
 
+// Fail 终止后续执行并返回错误
+func (c *Context) Fail(code int, msg string) {
+    c.index = len(c.handlers)  // 终止后续执行
+    c.Writer.WriteHeader(code)
+    c.Writer.Write([]byte(msg))
+}
+
 // reset 重置 Context 状态，用于对象池复用
 func (c *Context) reset() {
     c.Writer = nil
