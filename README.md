@@ -41,10 +41,19 @@ HTTP 协议解析 (net/http)
 ## 🚀 快速开始
 
 ### 运行 Mini-Gin (Core)
+
+每个章节对应一个独立可运行的代码快照：
+
 ```bash
-cd mini-gin
-go run main.go
-curl http://localhost:8080/users/123
+# 第5章：基础实现
+cd mini-gin/05-basic && go run .
+
+# 第6章：+ sync.Pool 优化
+cd mini-gin/06-pool && go run .
+
+# 第7章：+ Router Group（最终版）
+cd mini-gin/07-groups && go run .
+curl http://localhost:8080/v1/users/123
 ```
 
 ### 运行完整微服务架构 (Arch)
@@ -52,11 +61,11 @@ curl http://localhost:8080/users/123
 #### 方式一：使用 Docker Compose（推荐）
 ```bash
 # 一键启动所有服务
-docker-compose up --build
+cd arch/gateway && docker-compose up --build
 
 # 测试
-curl http://localhost:8080/users/123
-curl -H "Authorization: Bearer your-token" http://localhost:8080/orders/456
+curl http://localhost:8088/users/123
+curl -H "Authorization: Bearer your-token" http://localhost:8088/orders/456
 ```
 
 #### 方式二：本地运行
@@ -96,7 +105,10 @@ cd arch/gateway && go run main.go
 ```
 .
 ├── docs/            # 教程文档（13 章完整教程）
-├── mini-gin/        # 核心：从零实现的 Web 框架
+├── mini-gin/        # 核心：从零实现的 Web 框架（按章节拆分）
+│   ├── 05-basic/    #   第5章：基础实现（Context + Router + Engine）
+│   ├── 06-pool/     #   第6章：+ sync.Pool 对象池优化
+│   └── 07-groups/   #   第7章：+ Router Group 路由组（最终版）
 ├── arch/            # 架构：Gateway & Service 示例
 └── README.md
 ```

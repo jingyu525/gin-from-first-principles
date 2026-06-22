@@ -181,7 +181,10 @@ HTTP 协议解析 (net/http)
 
 ## 附录：完整代码索引
 
-- **Mini-Gin 源码**：`mini-gin/`
+- **Mini-Gin 源码**：
+  - 第5章（基础实现）：`mini-gin/05-basic/`
+  - 第6章（Pool 优化）：`mini-gin/06-pool/`
+  - 第7章（Router Group）：`mini-gin/07-groups/`
 - **API Gateway 示例**：`arch/gateway/`
 - **用户服务示例**：`arch/user-service/`
 - **订单服务示例**：`arch/order-service/`

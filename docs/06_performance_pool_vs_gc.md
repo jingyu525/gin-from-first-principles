@@ -75,6 +75,8 @@ func (c *Context) reset() {
 
 ---
 
+> **对应代码**：`mini-gin/06-pool/`（在 05-basic 基础上增加 sync.Pool 优化）
+
 ## 3. 压测推导
 
 ### 3.1 对比开启 Pool 前后的理论性能差异

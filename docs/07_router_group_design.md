@@ -1,5 +1,7 @@
 # 第七章：Router Group 的推导
 
+> **对应代码**：`mini-gin/07-groups/`（在 06-pool 基础上增加 RouterGroup）
+
 ## 1. 问题：代码重复与权限隔离
 
 ### 1.1 场景描述
@@ -25,13 +27,15 @@ type RouterGroup struct {
     prefix      string
     middleware  []Handler
     parent      *RouterGroup  // 支持嵌套
+    engine      *Engine       // 指向主引擎，用于注册路由
 }
 
 func (g *RouterGroup) Group(prefix string) *RouterGroup {
     return &RouterGroup{
         prefix:     g.prefix + prefix,
-        middleware:  g.middleware,
+        middleware:  append([]Handler{}, g.middleware...),  // 复制切片，避免污染父 Group
         parent:      g,
+        engine:      g.engine,  // 传递 Engine 引用
     }
 }
 ```
@@ -45,8 +49,11 @@ func (g *RouterGroup) Use(middleware ...Handler) {
 func (g *RouterGroup) GET(path string, handler Handler) {
     fullPath := g.prefix + path
     allHandlers := append(g.middleware, handler)
-    // 注册路由时，包含所有继承的中间件
-    e.router.addRoute("GET", fullPath, allHandlers...)
+    // 通过闭包将中间件链注入 Context，然后注册到 Engine 的路由器
+    g.engine.router.addRoute("GET", fullPath, func(c *Context) {
+        c.handlers = allHandlers
+        c.Next()
+    })
 }
 ```
 

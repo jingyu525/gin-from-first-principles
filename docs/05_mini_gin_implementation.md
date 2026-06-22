@@ -2,19 +2,21 @@
 
 ## 1. 环境准备：Go Module 初始化
 
+> **对应代码**：`mini-gin/05-basic/`
+
 ### 1.1 创建项目
 ```bash
 mkdir mini-gin
 cd mini-gin
-go mod init github.com/jingyu525/mini-gin
+go mod init github.com/jingyu525/mini-gin/05-basic
 ```
 
 ### 1.2 项目结构
 ```
-mini-gin/
+05-basic/
 ├── go.mod
 ├── context.go   # Context 定义
-├── router.go    # Radix Tree 路由
+├── router.go    # Radix Tree 路由 + Engine
 └── main.go      # 启动入口
 ```
 
@@ -165,19 +167,24 @@ func (e *Engine) Run(addr string) error {
 ```go
 func main() {
     r := New()
-    
+
+    r.Use(func(c *Context) {
+        fmt.Println("[Log] Request:", c.Request.Method, c.Request.URL.Path)
+        c.Next()
+    })
+
     r.GET("/users/:id", func(c *Context) {
         id := c.Param("id")
         c.JSON(200, map[string]string{"id": id})
     })
-    
+
     r.Run(":8080")
 }
 ```
 
 ### 5.2 启动服务
 ```bash
-go run main.go
+cd mini-gin/05-basic && go run .
 ```
 
 ### 5.3 发送请求
